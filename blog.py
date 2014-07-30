@@ -17,7 +17,7 @@ app.config.from_object(__name__)
 
 # function used for connecting to the DATABASE
 def connect_db():
-    return sqllite3.connect(app.config['DATABASE'])
+    return sqlite3.connect(app.config['DATABASE'])
 
 def login_required(test):
     @wraps(test)
@@ -49,10 +49,31 @@ def logout():
     flash('You were logged out')
     return redirect(url_for('login'))
 
+@app.route('/add',methods=['POST'])
+@login_required
+def add():
+    title = request.form['title']
+    post = request.form['post']
+    if not title or not post:
+        flash("All fields are required. Please try again.")
+        return redirect(url_for('main'))
+    else:
+        g.db = connect_db()
+        g.db.execute('INSERT INTO posts (title, post) VALUES (?, ?)',
+                [request.form['title'], request.form['post']])
+        g.db.commit()
+        g.db.close()
+        flash('New entry was successfully posted!')
+        return redirect(url_for('main'))
+
 @app.route('/main')
 @login_required
-def main():
-    return render_template('main.html')
+def main(): 
+    g.db = connect_db()
+    cur = g.db.execute('SELECT * FROM posts')
+    posts = [dict(title=row[0], post=row[1]) for row in cur.fetchall()]
+    g.db.close()
+    return render_template('main.html', posts=posts)
 
 if __name__ == '__main__':
     app.run(debug=True)
