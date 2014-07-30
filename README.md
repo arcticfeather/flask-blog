@@ -1,0 +1,1 @@
+This is a simple flask blog app
