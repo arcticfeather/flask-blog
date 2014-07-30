@@ -1,6 +1,6 @@
 # blog.py - controller
 
-from flask import Flask, render_template, request, session. \
+from flask import Flask, render_template, request, session, \
     flash, redirect, url_for, g
 import sqlite3
 
