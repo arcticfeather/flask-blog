@@ -6,6 +6,9 @@ import sqlite3
 
 # config
 DATABASE = "blog.db"
+USERNAME = "admin"
+PASSWORD = "admin"
+SECRET_KEY = "9D577945BBF6F182E5D8288B"
 app = Flask(__name__)
 
 # pulls in app configuration by looking for UPPERCASE variables
@@ -17,9 +20,23 @@ def connect_db():
 
 # views
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def login():
-    return render_template('login.html')
+    error = None
+    if request.method == 'POST':
+        if request.form['username'] != app.config['USERNAME'] or \
+                request.form['password'] != app.config['PASSWORD']:
+            error = 'Invalid Credentials. Please try again.'
+        else:
+            session['logged_in'] = True
+            return redirect(url_for('main'))
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    flash('You were logged out')
+    return redirect(url_for('login'))
 
 @app.route('/main')
 def main():
